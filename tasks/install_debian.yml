@@ -1,0 +1,22 @@
+---
+- name: Debian - install runit
+  apt:
+    name=runit
+    state=present
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: Ubuntu - start and enable runit service
+  service:
+    name=runsvdir
+    enabled=yes
+    state=started
+  when: ansible_distribution|lower == "ubuntu"
+
+- name: Debian - start and enable runit service
+  service:
+    name=runit-start
+    enabled=yes
+    state=started
+  when: ansible_distribution|lower == "debian"
+

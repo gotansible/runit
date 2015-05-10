@@ -1,0 +1,11 @@
+---
+# tasks file for runit
+
+- name: install runit on Debian
+  include: install_debian.yml
+  when: ansible_os_family == "Debian"
+
+- name: install runit on CentOS
+  include: install_centos.yml
+  when: ansible_os_family == "RedHat"
+

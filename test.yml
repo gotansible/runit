@@ -1,0 +1,15 @@
+- hosts: all
+  sudo: true
+  roles:
+    - {role: runit}
+
+  tasks:
+  - name: place file to run
+    copy: src=testrun.sh dest=/opt/runme mode=0755
+
+  - name: create log dir
+    file: state=directory path=/var/log/myservice
+
+  - name: test runit
+    runit: name=myservice enabled=true state=up timeout=9 command='bash /opt/runme'
+

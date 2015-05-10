@@ -1,0 +1,14 @@
+---
+
+- name: CentOS - Install RunIt
+  yum:
+    pkg=runit
+    state=present
+    update_cache=yes
+
+- name: CentOS - start and enable runit service
+  service:
+    name=runsvdir-start
+    enabled=yes
+    state=started
+
