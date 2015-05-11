@@ -11,5 +11,5 @@
     file: state=directory path=/var/log/myservice
 
   - name: test runit
-    runit: name=myservice enabled=true state=up timeout=9 command='bash /opt/runme'
+    runit: name=myservice enabled=true state=up timeout=9 user='root' command='bash /opt/runme'
 
