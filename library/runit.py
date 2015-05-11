@@ -17,75 +17,78 @@ notes:
     - Note: the role runit must be executed before this task
     -
     - Due to the nature of runit, enabed='yes' will cause runit to start.
-    - In the manual='yes' mode you must provide a command for the run file to run when you
-    - want your service to start. However, if you want more control, you can set
-    - manual='yes' and use the returned vars of run_service_file and log_service_file and
-    - generate your own run files for both. Note, that in the case of using your own
-    - run file, you'll need to run this module in the enabled='false' state, then generate your
-    - files to the locations specified by the run_service_file and log_service_file and then enable
-    - the service after the custom run files have been place in their correct paths. In the case
-    - of this manual mode, the 'user' and 'command' values are not used
+    - In the auto='yes' mode you must provide a command for the run file to execute when you
+    - want your service to start and provide the user the running service will run under.
+    - However, if you want more control, you can set  auto='no' and use the returned vars
+    - of run_service_file and log_service_file and generate your own run files for both.
+    - Note, that in the case of using your own run file, you'll need to run this module in the
+    - enabled='false' state, then generate your files to the locations specified by the
+    - run_service_file and log_service_file and then enable the service after the custom run
+    - files have been place in their correct paths.
+    - In the case of auto='no', the 'user' and 'command' values are not used.
     -
     - If the service is not enabled, state and action values are ignored.
 requirements: [ ]
 author: Franklin Wise
 options:
   name:
-    description:
-        - The name of the service, directories will be created with this a name and this name
-        will be used to start and stop the service
     required: true
-    default: []
-  state:
+    default: ""
     description:
-        - If up the service will start providing it's 'Enabled'
-        If down the service will be stopped providing it's running and 'Enabled'
-        If once the service will start, however, it if crashes, it will stay down
-        proving it is 'Enabled'
+        - The name of the service, directories will be created with this name and this name
+        will be used to start and stop the service. The name should consist of [A-Za-z0-9_-]
+  state:
     required: true
     choices: [ "up", "down", "once" ]
+    description:
+	    Change the state of the service only if enabled='yes'
+	    * up - Keep the service up, if it crashes or stops attempt to restart it.
+	    * down - Bring the service down.
+	    * once - Can only be run from the down state. Will start the service, however, will not restart if the service crashes.
   enabled:
-    required: false
     default: "yes"
+    required: false
     choices: [ "yes", "no" ]
     description:
         - if enabled the service will be running and also will start on system boot
         if disabled the service will not be running and will not start on system boot
   timeout:
+    default: 7
+    required: false
     description:
         - The number of seconds to wait for the service to start or stop before timing out
+  auto:
     required: false
-    default: 7
-  manual:
-    required: false
-    default: "no"
+    default: "yes"
     choices: [ "yes", "no" ]
     description:
-        - if manual is true, the caller is required to create the run file and the run log file.
-        - See the notes for a more detailed explanation.
+	    - 'yes' Automatically creates the run_service_file and the log_service_file to execute the service.
+	    requires the 'user' and 'command' values to be set
+        - 'no' The caller is required to create the run file and the run log file.
+        See the notes for a more detailed explanation.
   command:
-    description:
-        - The command to run that will start the executable to run
-    required: true
+    required: false
     default: null
-  user:
     description:
-        - The user that the service will run under. It is recommended that this value be set if manual='yes'
+        - The command to run that will start the executable to run. Required if auto='yes'
+  user:
     required: false
     default: "root"
+    description:
+        - The user that the service will run under. It is recommended that this value be set if auto='yes'
   env_vars:
+    required: false
+    default: {}
     description:
         - A hash of key value pairs of environmental variables that should be available for the service
-    required: false
-    default: null
   action:
     required: false
     default: null
     choices: [ "restart", "reload" ]
     description:
-      - if the service is up and enabled causes the given action to take place.
-        restart will stop the servie and the start it
-        reload will send the HUP signal to cause a config reload
+      - if the service is up and enabled causes the given action to take place:
+        * restart will stop the servie and the start it
+        * reload will send the HUP signal to cause a config reload
 '''
 
 EXAMPLES = '''
@@ -232,7 +235,7 @@ def main():
             timeout = dict(required=False, default=7),
             env_vars = dict(required=False, default=None),
             action = dict(required=False, choices=['restart','reload'], default=None),
-            manual = dict(required=False, default='no', type='bool'),
+            auto = dict(required=False, default='yes', type='bool'),
             command = dict(required=False, default=None),
             user = dict(required=False, default='root')
     #        signal = dict(required=False, choices=['HUP','CONT','TERM', 'KILL', 'USR1', 'USR2', 'STOP', 'ALRM', 'QUIT'], default=None),
@@ -249,7 +252,7 @@ def main():
     timeout = params['timeout']
     env_vars = params['env_vars']
     action = params['action']
-    manual = params['manual']
+    auto = params['auto']
     command = params['command']
     user = params['user']
     #signal = params['signal']
@@ -298,7 +301,7 @@ exec 2>&1
 exec chpst -e /etc/sv/%s/env -u %s %s
     ''' % (name, user, command)
 
-    if not manual:
+    if auto:
         # create run
         changed |= write_file(module, command_text, run_service_file)
         # create log/run
