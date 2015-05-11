@@ -1,0 +1,5 @@
+#!/bin/sh
+
+exec 2>&1
+exec chpst -e /etc/sv/{{ service_name }}/env -u {{ service_user }} {{ service_command }}
+

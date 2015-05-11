@@ -1,2 +1,6 @@
 ---
 # defaults file for runit
+
+service_name: myservice
+service_user: root
+service_command: bash /opt/runme
