@@ -17,7 +17,7 @@ notes:
     - Note: the role runit must be executed before this task
     -
     - Due to the nature of runit, enabed='yes' will cause runit to start.
-    - In the auto='yes' mode you must provide a command for the run file to run when you
+    - In the manual='yes' mode you must provide a command for the run file to run when you
     - want your service to start. However, if you want more control, you can set
     - manual='yes' and use the returned vars of run_service_file and log_service_file and
     - generate your own run files for both. Note, that in the case of using your own
