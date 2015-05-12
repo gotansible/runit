@@ -310,7 +310,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
     # create each file for ENV
     if not env_vars is None:
         for k, v in env_vars.iteritems():
-            changed |= write_file(module, contents,'%s/%s' % (service_env_dir, k ))
+            changed |= write_file(module, v,'%s/%s' % (service_env_dir, k ))
 
     enabled_service_dir = '/etc/service/%s' % name
 
