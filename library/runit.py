@@ -307,10 +307,36 @@ exec chpst -e /etc/sv/%s/env -u %s %s
         # create log/run
         changed |= write_file(module, log_command, log_service_file)
 
-    # create each file for ENV
-    if not env_vars is None:
+    # get key value
+
+    env_files = []
+    for (dirpath, dirnames, filenames) in os.walk(service_env_dir):
+        env_files.extend(filenames)
+        break
+
+    existing_env = {}
+    for fn in env_files:
+        try:
+            with open(os.path.join(service_env_dir, fn), 'r') as f:
+                v = f.read()
+                existing_env[fn] = v
+        except Exception as e:
+            module.fail_json(path=service_env_dir, msg='Error while reading key value from env_vars: %s' % str(e))
+
+    if env_vars is None:
+        env_vars = {}
+
+    if cmp(existing_env, env_vars) == 0:
+        pass
+    else:
+        changed = True
+
+        # remove all existing, kv files
+        for k in env_files:
+            os.remove(os.path.join(service_env_dir, k))
+
         for k, v in env_vars.iteritems():
-            changed |= write_file(module, v,'%s/%s' % (service_env_dir, k ))
+            write_file(module, v,'%s/%s' % (service_env_dir, k ))
 
     enabled_service_dir = '/etc/service/%s' % name
 
