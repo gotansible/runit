@@ -344,38 +344,38 @@ exec chpst -e /etc/sv/%s/env -u %s %s
 
     elif enabled:
         if state == 'up' and not is_running:
-            rc, message, status = run_command(module, 'up', name, timeout)
+            rc, message, st = run_command(module, 'up', name, timeout)
             if rc != 0:
-                module.fail_json(rc=rc, error=message, status=status)
+                module.fail_json(rc=rc, error=message, status=st)
             else:
                 changed = true
 
         elif state == 'down' and not is_down:
-            rc, message, status = run_command(module, 'down', name, timeout)
+            rc, message, st = run_command(module, 'down', name, timeout)
             if rc != 0:
-                module.fail_json(rc=rc, error=message, status=status)
+                module.fail_json(rc=rc, error=message, status=st)
             else:
                 changed = true
 
         elif state == 'once' and not is_running:
             #once needs to be trigger from a down state
-            rc, message, status = run_command(module, 'once', name, timeout)
+            rc, message, st = run_command(module, 'once', name, timeout)
             if rc != 0:
-                module.fail_json(rc=rc, error=message, status=status)
+                module.fail_json(rc=rc, error=message, status=st)
             else:
                 changed = true
 
         elif action == 'restart' and (state == 'up' or state == 'once'):
-                rc, message, status = run_command(module, 'restart', name, timeout)
+                rc, message, st = run_command(module, 'restart', name, timeout)
                 if rc != 0:
-                    module.fail_json(rc=rc, error=message, status=status)
+                    module.fail_json(rc=rc, error=message, status=st)
                 else:
                     changed = true
 
         elif action == 'reload' and (state == 'up' or state == 'once'):
-                rc, message, status = run_command(module, 'reload', name, timeout)
+                rc, message, st = run_command(module, 'reload', name, timeout)
                 if rc != 0:
-                    module.fail_json(rc=rc, error=message, status=status)
+                    module.fail_json(rc=rc, error=message, status=st)
                 else:
                     changed = true
 
