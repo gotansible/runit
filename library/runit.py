@@ -259,6 +259,7 @@ def main():
     #validate = params['validate']
     #params['validate'] = path = os.path.expanduser(params['validate'])
 
+    restarted=False
     rc, message, status = get_status(module, name)
     is_running = 'run' == status
     is_down = 'down' == status
@@ -351,6 +352,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
             try:
                 os.symlink(service_dir + '/', enabled_service_dir)
                 is_running=True #dont trigger an up since we just started
+                restarted=True
             except OSError as e:
                 module.fail_json(path=enabled_service_dir, msg='Error while linking: %s' % str(e))
         else:
@@ -375,6 +377,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                 module.fail_json(rc=rc, error=message, status=st)
             else:
                 changed = true
+                restarted=True
 
         elif state == 'down' and not is_down:
             rc, message, st = run_command(module, 'down', name, timeout)
@@ -390,6 +393,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                 module.fail_json(rc=rc, error=message, status=st)
             else:
                 changed = true
+                restarted=True
 
         elif action == 'restart' and (state == 'up' or state == 'once'):
                 rc, message, st = run_command(module, 'restart', name, timeout)
@@ -397,6 +401,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                     module.fail_json(rc=rc, error=message, status=st)
                 else:
                     changed = true
+                    restarted=True
 
         elif action == 'reload' and (state == 'up' or state == 'once'):
                 rc, message, st = run_command(module, 'reload', name, timeout)
@@ -405,7 +410,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                 else:
                     changed = true
 
-    module.exit_json(status=status, changed=changed, run_service_file=run_service_file, log_service_file=log_service_file)
+    module.exit_json(status=status,restarted=restarted, changed=changed, run_service_file=run_service_file, log_service_file=log_service_file)
 
 
 # import module snippets

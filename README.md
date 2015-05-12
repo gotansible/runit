@@ -170,7 +170,12 @@ See test.yml for a working version.
 
       - name: test runit
         runit: name=myservice enabled=true state=up timeout=9 user='root' command='bash /opt/runme'
-
+		register: myservice_status
+	  
+### handler.yml
+	  - name: restart myservice
+		runit: name=myservice enabled=true state=up timeout=9 action=restart
+		when: not myservice_status.restarted
 
 License
 -------
