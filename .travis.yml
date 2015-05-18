@@ -12,7 +12,7 @@ script:
   - ansible-playbook -i inventory test.yml --syntax-check
   - ansible-playbook -i inventory test.yml --connection=local --sudo -e "key=value"
   - >
-    ansible-playbook -i inventory test.yml --connection=local --sudo -e "key-value"
+    ansible-playbook -i inventory test.yml --connection=local --sudo -e "key=value"
     | grep -q 'changed=0.*failed=0'
     && (echo 'Idempotence test: pass' && exit 0)
     || (echo 'Idempotence test: fail' && exit 1)
