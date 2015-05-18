@@ -40,11 +40,12 @@ Task Variables
 		* once - Can only be run from the down state. Will start the service, however, will not restart if the service crashes.
   enabled:
     required: false
-    default: "yes"
+    default: ""
     choices: [ "yes", "no" ]
     description:
         - if enabled the service will be running and also will start on system boot
         if disabled the service will not be running and will not start on system boot
+		if not defined, there will be no change in the enabled state
   timeout:
     default: 7
     required: false

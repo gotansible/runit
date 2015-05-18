@@ -19,10 +19,10 @@ notes:
     - Due to the nature of runit, enabed='yes' will cause runit to start.
     - In the auto='yes' mode you must provide a command for the run file to execute when you
     - want your service to start and provide the user the running service will run under.
-    - However, if you want more control, you can set  auto='no' and use the returned vars
+    - However, if you want more control, you can set auto='no' and use the returned vars
     - of run_service_file and log_service_file and generate your own run files for both.
     - Note, that in the case of using your own run file, you'll need to run this module in the
-    - enabled='false' state, then generate your files to the locations specified by the
+    - enabled='false' or enabled not defined state, then generate your files to the locations specified by the
     - run_service_file and log_service_file and then enable the service after the custom run
     - files have been place in their correct paths.
     - In the case of auto='no', the 'user' and 'command' values are not used.
@@ -39,20 +39,22 @@ options:
         will be used to start and stop the service. The name should consist of [A-Za-z0-9_-]
   state:
     required: true
-    choices: [ "up", "down", "once" ]
+    choices: [ "up", "down", "once", "start", "stop" ]
     description:
 	    Change the state of the service only if enabled='yes'
 	    * up - Keep the service up, if it crashes or stops attempt to restart it.
 	    * down - Bring the service down.
 	    * once - Can only be run from the down state. Will start the service, however, will not restart if the service crashes.
+        * start - wait timeout before determining if the service is running
+        * stop - wait timeout before determining if the service has shutdown
   enabled:
     default: "yes"
     required: false
-    choices: [ "yes", "no", "ignore" ]
+    choices: [ "yes", "no" ]
     description:
         - if enabled the service will be running and also will start on system boot
         if disabled the service will not be running and will not start on system boot
-        if ignore the state will not change
+        if not defined or set the state will not change
   timeout:
     default: 7
     required: false
@@ -231,8 +233,8 @@ def main():
     module = AnsibleModule(
         argument_spec = dict(
             name  = dict(required=True),
-            state = dict(required=True, choices=['up','down','once'] ),
-            enabled = dict(default='yes', choices=['yes','no','ignore'] ),
+            state = dict(required=True, choices=['start', 'stop', 'up','down','once'] ),
+            enabled = dict(type='bool'),
             timeout = dict(required=False, default=7),
             env_vars = dict(required=False, default=None),
             action = dict(required=False, choices=['restart','reload'], default=None),
@@ -345,7 +347,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
     # could handle edge cases like if the service folder exists, but is not a symlink etc.
     enabled_state = get_file_state(enabled_service_dir)
 
-    if enabled is None or enabled == "ignore":
+    if enabled is None:
         pass
 
     elif enabled and enabled_state != 'link':
@@ -372,16 +374,16 @@ exec chpst -e /etc/sv/%s/env -u %s %s
         pass
 
     elif enabled:
-        if state == 'up' and not is_running:
-            rc, message, st = run_command(module, 'up', name, timeout)
+        if (state == 'up' or state=='start') and not is_running:
+            rc, message, st = run_command(module, state, name, timeout)
             if rc != 0:
                 module.fail_json(rc=rc, error=message, status=st)
             else:
                 changed = true
                 restarted=True
 
-        elif state == 'down' and not is_down:
-            rc, message, st = run_command(module, 'down', name, timeout)
+        elif (state == 'down' or state== 'stop') and not is_down:
+            rc, message, st = run_command(module, state, name, timeout)
             if rc != 0:
                 module.fail_json(rc=rc, error=message, status=st)
             else:
@@ -396,7 +398,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                 changed = true
                 restarted=True
 
-        elif action == 'restart' and (state == 'up' or state == 'once'):
+        elif action == 'restart' and (state == 'up' or state == 'once' or state == 'start'):
                 rc, message, st = run_command(module, 'restart', name, timeout)
                 if rc != 0:
                     module.fail_json(rc=rc, error=message, status=st)
@@ -404,7 +406,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                     changed = true
                     restarted=True
 
-        elif action == 'reload' and (state == 'up' or state == 'once'):
+        elif action == 'reload' and (state == 'up' or state == 'once' or state == 'start'):
                 rc, message, st = run_command(module, 'reload', name, timeout)
                 if rc != 0:
                     module.fail_json(rc=rc, error=message, status=st)
