@@ -39,5 +39,5 @@
       state=start
       timeout=7
       user=myservice
-      command='cat /opt/runme | bash'
+      command='/opt/runme'
 
