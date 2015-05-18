@@ -32,6 +32,8 @@
       owner=myservice
       group=myservice
 
+  - pause: seconds=10
+
   - name: test runit
     runit:
       name=myservice
