@@ -36,7 +36,7 @@
     runit:
       name=myservice
       enabled=yes
-      state=up
+      state=start
       timeout=7
       user=myservice
       command='cat /opt/runme | bash'
