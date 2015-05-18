@@ -4,12 +4,40 @@
     - {role: runit}
 
   tasks:
-  - name: place file to run
-    copy: src=testrun.sh dest=/opt/runme mode=0755
+   - name: install - create group
+    group:
+      name=myservice
+      system=yes
+
+  - name: install - create user
+    user:
+      name=myservice
+      group=myservice
+      system=yes
+      createhome=no
+
+ - name: place file to run
+    copy: 
+      src=testrun.sh 
+      dest=/opt/runme 
+      mode=0755
+      owner=myservice
+      group=myservice
 
   - name: create log dir
-    file: state=directory path=/var/log/myservice
+    file: 
+      state=directory 
+      path=/var/log/myservice
+      mode=0755
+      owner=myservice
+      group=myservice
 
   - name: test runit
-    runit: name=myservice enabled=yes state=up timeout=7 user=root command='cat /opt/runme | bash'
+    runit:
+      name=myservice
+      enabled=yes
+      state=up
+      timeout=7
+      user=myservice
+      command='cat /opt/runme | bash'
 
