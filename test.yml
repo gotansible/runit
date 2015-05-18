@@ -4,7 +4,7 @@
     - {role: runit}
 
   tasks:
-   - name: install - create group
+  - name: install - create group
     group:
       name=myservice
       system=yes
@@ -16,7 +16,7 @@
       system=yes
       createhome=no
 
- - name: place file to run
+  - name: place file to run
     copy: 
       src=testrun.sh 
       dest=/opt/runme 
