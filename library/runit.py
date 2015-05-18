@@ -97,9 +97,9 @@ options:
 EXAMPLES = '''
 
 # runit if enabled is in the running state
-- runit: name=myservicename enabled=true state=running timeout=9
+- runit: name=myservicename enabled=yes state=running timeout=9
 
-- runit: name=myservicename enabled=true state=running timeout=9 signal=HUP
+- runit: name=myservicename enabled=yes state=running timeout=9 signal=HUP
 '''
 
 def get_status(module, name):
@@ -379,7 +379,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
             if rc != 0:
                 module.fail_json(rc=rc, error=message, status=st)
             else:
-                changed = true
+                changed = True
                 restarted=True
 
         elif (state == 'down' or state== 'stop') and not is_down:
@@ -387,7 +387,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
             if rc != 0:
                 module.fail_json(rc=rc, error=message, status=st)
             else:
-                changed = true
+                changed = True
 
         elif state == 'once' and not is_running:
             #once needs to be trigger from a down state
@@ -395,7 +395,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
             if rc != 0:
                 module.fail_json(rc=rc, error=message, status=st)
             else:
-                changed = true
+                changed = True
                 restarted=True
 
         elif action == 'restart' and (state == 'up' or state == 'once' or state == 'start'):
@@ -403,7 +403,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                 if rc != 0:
                     module.fail_json(rc=rc, error=message, status=st)
                 else:
-                    changed = true
+                    changed = True
                     restarted=True
 
         elif action == 'reload' and (state == 'up' or state == 'once' or state == 'start'):
@@ -411,7 +411,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
                 if rc != 0:
                     module.fail_json(rc=rc, error=message, status=st)
                 else:
-                    changed = true
+                    changed = True
 
     module.exit_json(status=status,restarted=restarted, changed=changed, run_service_file=run_service_file, log_service_file=log_service_file)
 
