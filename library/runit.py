@@ -48,10 +48,11 @@ options:
   enabled:
     default: "yes"
     required: false
-    choices: [ "yes", "no" ]
+    choices: [ "yes", "no", "ignore" ]
     description:
         - if enabled the service will be running and also will start on system boot
         if disabled the service will not be running and will not start on system boot
+        if ignore the state will not change
   timeout:
     default: 7
     required: false
@@ -115,7 +116,7 @@ def run_command(module, command, name, timeout):
     if rc != 0:
         return rc, out, 'error'
     else:
-        return status()
+        return get_status(module, name)
 
 def get_file_state(path):
     ''' Find out current state '''
@@ -231,7 +232,7 @@ def main():
         argument_spec = dict(
             name  = dict(required=True),
             state = dict(required=True, choices=['up','down','once'] ),
-            enabled = dict(default='yes', type='bool'),
+            enabled = dict(default='yes', choices=['yes','no','ignore'] ),
             timeout = dict(required=False, default=7),
             env_vars = dict(required=False, default=None),
             action = dict(required=False, choices=['restart','reload'], default=None),
@@ -344,7 +345,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
     # could handle edge cases like if the service folder exists, but is not a symlink etc.
     enabled_state = get_file_state(enabled_service_dir)
 
-    if enabled is None:
+    if enabled is None or enabled == "ignore":
         pass
 
     elif enabled and enabled_state != 'link':
