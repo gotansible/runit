@@ -107,8 +107,12 @@ def get_status(module, name):
     rc, out, err = module.run_command('%s status %s' % (sv, name), check_rc=False)
     # run: name: (pid 22222) 10s; run: log: (pid 33333) 10s
     for line in out.split('\n'):
-        parts = line.lower().split()
-        return rc, out, parts[0][:-1]
+        status = line.lower()
+        if status.find('want up'):
+            return rc, out, 'wantup'
+        else:
+            parts = status.split()
+            return rc, out, parts[0][:-1]
     else:
         return rc, out, ''
 
@@ -266,6 +270,7 @@ def main():
     rc, message, status = get_status(module, name)
     is_running = 'run' == status
     is_down = 'down' == status
+    is_wantup = 'wantup' == status
     #is_failed = 'fail' == status
     #is_warning = 'warning' == status
 
@@ -312,7 +317,6 @@ exec chpst -e /etc/sv/%s/env -u %s %s
         changed |= write_file(module, log_command, log_service_file)
 
     # get key value
-
     env_files = []
     for (dirpath, dirnames, filenames) in os.walk(service_env_dir):
         env_files.extend(filenames)
@@ -374,7 +378,11 @@ exec chpst -e /etc/sv/%s/env -u %s %s
         pass
 
     elif enabled:
-        if (state == 'up' or state=='start') and not is_running:
+        if (not is_running and is_wantup) and (state == 'once' or state == 'up' or state == 'start') :
+            # runit is trying to get up, no need to execute a command here, otherwise, we'll error out
+            pass
+
+        elif (state == 'up' or state=='start') and not is_running:
             rc, message, st = run_command(module, state, name, timeout)
             if rc != 0:
                 module.fail_json(rc=rc, error=message, status=st)
