@@ -70,6 +70,11 @@ Task Variables
     default: "root"
     description:
         - The user that the service will run under. It is recommended that this value be set if auto='yes'
+  group:
+    required: false
+    default: ""
+    description:
+        - The group that the service will run under. Don't set this unless needed.
   env_vars:
     required: false
     default: {}

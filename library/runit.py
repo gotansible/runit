@@ -79,6 +79,12 @@ options:
     default: "root"
     description:
         - The user that the service will run under. It is recommended that this value be set if auto='yes'
+  group:
+    required: false
+    default: ""
+    description:
+        - The group that the service will run under. Don't set this unless needed.
+
   env_vars:
     required: false
     default: {}
@@ -244,7 +250,8 @@ def main():
             action = dict(required=False, choices=['restart','reload'], default=None),
             auto = dict(required=False, default='yes', type='bool'),
             command = dict(required=False, default=None),
-            user = dict(required=False, default='root')
+            user = dict(required=False, default='root'),
+            group = dict(required=False, default='')
     #        signal = dict(required=False, choices=['HUP','CONT','TERM', 'KILL', 'USR1', 'USR2', 'STOP', 'ALRM', 'QUIT'], default=None),
     #        validate = dict(required=False, default=None),
         ),
@@ -262,6 +269,7 @@ def main():
     auto = params['auto']
     command = params['command']
     user = params['user']
+    group = params['group']
     #signal = params['signal']
     #validate = params['validate']
     #params['validate'] = path = os.path.expanduser(params['validate'])
@@ -305,10 +313,14 @@ def main():
 exec chpst -u %s svlogd -tt /var/log/%s
     ''' % (user, name)
 
+    runas = user
+    if group:
+        runas = '%s:%s' % (user, group)
+
     command_text = '''#!/bin/sh
 exec 2>&1
 exec chpst -e /etc/sv/%s/env -u %s %s
-    ''' % (name, user, command)
+    ''' % (name, runas, command)
 
     if auto:
         # create run
