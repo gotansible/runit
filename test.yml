@@ -41,5 +41,6 @@
       state=start
       timeout=7
       user=myservice
+      group=myservice
       command='/opt/runme'
 
