@@ -322,7 +322,7 @@ exec 2>&1
 exec chpst -e /etc/sv/%s/env -u %s %s
     ''' % (name, runas, command)
 
-    if auto:
+    if auto and command:
         # create run
         changed |= write_file(module, command_text, run_service_file)
         # create log/run
