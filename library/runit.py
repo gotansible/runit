@@ -346,7 +346,9 @@ exec chpst -e /etc/sv/%s/env -u %s %s
     if env_vars is None:
         env_vars = {}
 
-    if cmp(existing_env, env_vars) == 0:
+    unmatched_item = set(existing_env.items()) ^ set(env_vars.items())
+
+    if unmatched_item == 0:
         pass
     else:
         changed = True
