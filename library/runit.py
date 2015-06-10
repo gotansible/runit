@@ -346,19 +346,17 @@ exec chpst -e /etc/sv/%s/env -u %s %s
     if env_vars is None:
         env_vars = {}
 
-    unmatched_item = set(existing_env.items()) ^ set(env_vars.items())
-
-    if False:
-        pass
-    else:
+    #TODO figure out how to diff these
+    #unmatched_item = set(existing_env.items()) ^ set(env_vars.items())
+    if len(env_vars) != len(existing_env):
         changed = True
 
-        # remove all existing, kv files
-        for k in env_files:
-            os.remove(os.path.join(service_env_dir, k))
+    # remove all existing, kv files
+    for k in env_files:
+        os.remove(os.path.join(service_env_dir, k))
 
-        for k, v in env_vars.iteritems():
-            write_file(module, v,'%s/%s' % (service_env_dir, k ))
+    for k, v in env_vars.iteritems():
+        write_file(module, v,'%s/%s' % (service_env_dir, k ))
 
     enabled_service_dir = '/etc/service/%s' % name
 
