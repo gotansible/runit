@@ -322,41 +322,44 @@ exec 2>&1
 exec chpst -e /etc/sv/%s/env -u %s %s
     ''' % (name, runas, command)
 
-    if auto and command:
-        # create run
-        changed |= write_file(module, command_text, run_service_file)
-        # create log/run
-        changed |= write_file(module, log_command, log_service_file)
+    setup = command
 
-    # get key value
-    env_files = []
-    for (dirpath, dirnames, filenames) in os.walk(service_env_dir):
-        env_files.extend(filenames)
-        break
+    if setup:
+        if auto:
+            # create run
+            changed |= write_file(module, command_text, run_service_file)
+            # create log/run
+            changed |= write_file(module, log_command, log_service_file)
 
-    existing_env = {}
-    for fn in env_files:
-        try:
-            with open(os.path.join(service_env_dir, fn), 'r') as f:
-                v = f.read()
-                existing_env[fn] = v
-        except Exception as e:
-            module.fail_json(path=service_env_dir, msg='Error while reading key value from env_vars: %s' % str(e))
+        # get key value pairs
+        env_files = []
+        for (dirpath, dirnames, filenames) in os.walk(service_env_dir):
+            env_files.extend(filenames)
+            break
 
-    if env_vars is None:
-        env_vars = {}
+        existing_env = {}
+        for fn in env_files:
+            try:
+                with open(os.path.join(service_env_dir, fn), 'r') as f:
+                    v = f.read()
+                    existing_env[fn] = v
+            except Exception as e:
+                module.fail_json(path=service_env_dir, msg='Error while reading key value from env_vars: %s' % str(e))
 
-    #TODO figure out how to diff these
-    #unmatched_item = set(existing_env.items()) ^ set(env_vars.items())
-    if len(env_vars) != len(existing_env):
-        changed = True
+        if env_vars is None:
+            env_vars = {}
 
-    # remove all existing, kv files
-    for k in env_files:
-        os.remove(os.path.join(service_env_dir, k))
+        #TODO figure out how to diff these
+        #unmatched_item = set(existing_env.items()) ^ set(env_vars.items())
+        if len(env_vars) != len(existing_env):
+            changed = True
 
-    for k, v in env_vars.iteritems():
-        write_file(module, v,'%s/%s' % (service_env_dir, k ))
+        # remove all existing, kv files
+        for k in env_files:
+            os.remove(os.path.join(service_env_dir, k))
+
+        for k, v in env_vars.iteritems():
+            write_file(module, v,'%s/%s' % (service_env_dir, k ))
 
     enabled_service_dir = '/etc/service/%s' % name
 
