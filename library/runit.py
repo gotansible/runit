@@ -117,8 +117,8 @@ def get_status(module, name):
         if status.find('want up'):
             return rc, out, 'wantup'
         else:
-            parts = status.split()
-            return rc, out, parts[0][:-1]
+            parts = status.split(':')
+            return rc, out, parts[0]
     else:
         return rc, out, ''
 
@@ -276,9 +276,9 @@ def main():
 
     restarted=False
     rc, message, status = get_status(module, name)
-    is_running = 'run' == status
-    is_down = 'down' == status
-    is_wantup = 'wantup' == status
+    is_running = ('run' == status)
+    is_down = ('down' == status)
+    is_wantup = ('wantup' == status)
     #is_failed = 'fail' == status
     #is_warning = 'warning' == status
 
