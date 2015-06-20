@@ -393,7 +393,7 @@ exec chpst -e /etc/sv/%s/env -u %s %s
         pass
 
     elif enabled:
-        if (not is_running and is_wantup) and (state == 'once' or state == 'up' or state == 'start') :
+        if is_wantup and (state == 'once' or state == 'up' or state == 'start') :
             # runit is trying to get up, no need to execute a command here, otherwise, we'll error out
             pass
 
