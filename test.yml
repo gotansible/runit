@@ -36,11 +36,14 @@
 
   - name: test runit
     runit:
-      name=myservice
-      enabled=yes
-      state=start
-      timeout=7
-      user=myservice
-      group=myservice
-      command='/opt/runme'
+      name: myservice
+      enabled: yes
+      state: start
+      timeout: 7
+      user: myservice
+      group: myservice
+      command: '/opt/runme'
+      commands_setup:
+        - echo line1
+        - echo line2
 

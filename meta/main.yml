@@ -6,7 +6,7 @@ galaxy_info:
   description: A role to install the runit package and a task to create individual runit services.
   company: 
   license: MIT
-  min_ansible_version: 1.2
+  min_ansible_version: 1.8
   platforms:
   - name: EL
     versions:
