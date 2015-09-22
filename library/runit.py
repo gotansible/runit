@@ -74,7 +74,7 @@ options:
     default: null
     description:
         - The command to run that will start the executable to run. Required if auto='yes'
-  commands_setup:
+  command_setup:
     required: false
     default: []
     description:
@@ -255,7 +255,7 @@ def main():
             action = dict(required=False, choices=['restart','reload'], default=None),
             auto = dict(required=False, default='yes', type='bool'),
             command = dict(required=False, default=None),
-            commands_setup = dict(required=False, default=list(), type='list'),
+            command_setup = dict(required=False, default=list(), type='list'),
             user = dict(required=False, default='root'),
             group = dict(required=False, default='')
     #        signal = dict(required=False, choices=['HUP','CONT','TERM', 'KILL', 'USR1', 'USR2', 'STOP', 'ALRM', 'QUIT'], default=None),
@@ -277,9 +277,9 @@ def main():
     user = params['user']
     group = params['group']
 
-    commands_setup = params['commands_setup']
-    if commands_setup == ['']:
-        commands_setup = list()
+    command_setup = params['command_setup']
+    if command_setup == ['']:
+        command_setup = list()
     #signal = params['signal']
     #validate = params['validate']
     #params['validate'] = path = os.path.expanduser(params['validate'])
@@ -332,7 +332,7 @@ exec 2>&1
 %s
 
 exec chpst -e /etc/sv/%s/env -u %s %s
-  ''' % ('\n'.join(commands_setup), name, runas, command)
+  ''' % ('\n'.join(command_setup), name, runas, command)
 
     setup = command
 
